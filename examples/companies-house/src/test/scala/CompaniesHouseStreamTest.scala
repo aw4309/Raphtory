@@ -2,6 +2,7 @@ package com.raphtory.examples.coho.companiesStream
 
 import com.raphtory.Raphtory
 import com.raphtory.algorithms.generic.EdgeList
+import com.raphtory.api.input.Source
 import com.raphtory.examples.coho.companiesStream.graphbuilders.{CompaniesStreamPersonGraphBuilder, CompaniesStreamRawGraphBuilder}
 import com.raphtory.sinks.FileSink
 import com.raphtory.spouts.WebSocketSpout
@@ -20,10 +21,10 @@ object CompaniesHouseStreamTest extends App {
   private val auth = raphtoryConfig.getString("raphtory.spout.coho.authorization")
   private val contentType = raphtoryConfig.getString("raphtory.spout.coho.contentType")
   private val url = raphtoryConfig.getString("raphtory.spout.coho.url")
-  val source = new WebSocketSpout(url, Some(auth), Some(contentType))
   val rawBuilder = new CompaniesStreamRawGraphBuilder()
   val personBuilder = new CompaniesStreamPersonGraphBuilder()
-  val graph = Raphtory.stream(spout = source, graphBuilder = personBuilder)
+  val source = Source(WebSocketSpout(url, Some(auth), Some(contentType)), personBuilder)
+  val graph = Raphtory.newGraph().stream(source)
   val output = FileSink("")
 
   graph

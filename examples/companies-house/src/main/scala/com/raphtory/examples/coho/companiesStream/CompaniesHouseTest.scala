@@ -5,6 +5,7 @@ import com.raphtory.algorithms.generic.{EdgeList, TwoHopPaths}
 import com.raphtory.spouts.FileSpout
 import com.raphtory.sinks.FileSink
 import com.raphtory.api.analysis.graphview.Alignment
+import com.raphtory.api.input.Source
 import com.raphtory.examples.coho.companiesStream.algorithms.CompanyDirectorGraph
 import com.raphtory.examples.coho.companiesStream.graphbuilders.{CompanyToPscBulkGraphBuilder, CompanyToPscGraphBuilder}
 import com.raphtory.formats.JsonFormat
@@ -17,12 +18,12 @@ object CompaniesHouseTest {
 
   def main(args: Array[String]) {
 
-    val source = FileSpout("/Users/rachelchan/Documents/nhsContractsPSCData", regexPattern = "^.*\\.([jJ][sS][oO][nN]??)$", recurse = true)
-    val builder = new CompanyToPscGraphBuilder()
+    val source = Source(FileSpout("/Users/rachelchan/Documents/nhsContractsPSCData", regexPattern = "^.*\\.([jJ][sS][oO][nN]??)$", recurse = true), new CompanyToPscGraphBuilder())
     val output = FileSink("/Users/rachelchan/Downloads/psc",JsonFormat())
     val graph = {
-      Raphtory.stream[String](source, builder)
+      Raphtory.newGraph()
     }
+    graph.load(source)
 
     graph
       .at("2022-08-04")

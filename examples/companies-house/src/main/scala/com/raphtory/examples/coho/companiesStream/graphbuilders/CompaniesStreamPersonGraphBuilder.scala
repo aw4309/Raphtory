@@ -6,9 +6,8 @@ import com.raphtory.api.input.ImmutableProperty
 import com.raphtory.api.input.Properties
 import com.raphtory.api.input.StringProperty
 import com.raphtory.api.input.Type
-import com.raphtory.examples.coho.companiesStream.rawModel.CompaniesHouseJsonProtocol.CompanyFormat
-import com.raphtory.examples.coho.companiesStream.rawModel.CompaniesHouseJsonProtocol.getField
-import com.raphtory.examples.coho.companiesStream.rawModel.Company
+import com.raphtory.examples.coho.companiesStream.rawModel.companyProfile.CompaniesHouseJsonProtocol.CompanyFormat
+import com.raphtory.examples.coho.companiesStream.rawModel.companyProfile.Company
 import spray.json._
 
 import java.text.SimpleDateFormat
