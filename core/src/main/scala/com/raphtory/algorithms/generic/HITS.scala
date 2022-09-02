@@ -1,18 +1,17 @@
 package com.raphtory.algorithms.generic
 
-import com.raphtory.algorithms.generic.NodeList
 import com.raphtory.api.analysis.graphview.GraphPerspective
 
 class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth")) {
 
-  // normalising on previous max isn't quite right
   override def apply(graph: GraphPerspective): graph.Graph = {
-    val initHub = 1.0;
+    val initHub = 1.0
     graph
       .setGlobalState { state =>
         state.newMax[Double]("hubAuthMax", retainState = false)
       }
-      .step { (vertex, state) =>
+      .step { vertex =>
+        // Initialise the hub values and propagate
         vertex.setState("hitshub", initHub)
 
         val outDegree = vertex.outDegree
@@ -20,10 +19,11 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
           vertex.messageOutNeighbours(initHub)
       }
       .step { (vertex, state) =>
+        // Initialise the auth values based on recieved hub values
         val firstHub = vertex.getState[Double]("hitshub") // fix so not double, msg types
 
         val queue     = vertex.messageQueue[Double]
-        val firstAuth = queue.sum / initHub //todo figure out normalising
+        val firstAuth = queue.sum / initHub // normalise
         vertex.setState("hitsauth", firstAuth)
 
         state("hubAuthMax") += initHub
@@ -38,6 +38,8 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
           vertex.messageInNeighbours(AuthMsg(firstAuth))
       }
       .iterate(
+              // set the new hub values to the sum of the received auth values and vice versa
+              // store the maximum of both in an accumulator, so the values can be normalised by dividing by the max
               { (vertex, state) =>
                 val hubAuthMax: Double = state("hubAuthMax").value
 
@@ -55,8 +57,6 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
                   case AuthMsg(value) =>
                     newAuth += (value / hubAuthMax)
                 }
-                //val newAuth = queue.map(l => l(0)).sum / authMax.max(hubMax)
-                //val newHub = queue.map(l => l(1)).sum / authMax.max(hubMax)
 
                 state("hubAuthMax") += newHub
                 state("hubAuthMax") += newAuth
@@ -69,7 +69,7 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
                 val inDegree  = vertex.inDegree
 
                 if (outDegree > 0.0)
-                  vertex.messageOutNeighbours(HubMsg(newHub)) // seq?
+                  vertex.messageOutNeighbours(HubMsg(newHub))
                 if (inDegree > 0.0)
                   vertex.messageInNeighbours(AuthMsg(newAuth))
 
