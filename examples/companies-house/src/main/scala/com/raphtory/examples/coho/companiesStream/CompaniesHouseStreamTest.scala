@@ -22,14 +22,14 @@ object CompaniesHouseStreamTest extends App {
   private val contentType = raphtoryConfig.getString("raphtory.spout.coho.contentType")
   private val url         = raphtoryConfig.getString("raphtory.spout.coho.url")
   val spout               = new WebSocketSpout(url, Some(auth), Some(contentType))
-//  val builder = new CompaniesStreamRawGraphBuilder()
+  val rawBuilder = new CompaniesStreamRawGraphBuilder()
   val builder             = new CompaniesStreamPersonGraphBuilder()
   val source              = Source(spout, builder)
   val context             = Raphtory
   val graph               = context.newGraph()
   graph.load(source)
 
-  val output = FileSink("")
+  val output = FileSink("/tmp/")
 
   graph
     .climb("2022-12-31", "1 second")
