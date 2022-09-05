@@ -16,14 +16,14 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
 
         val outDegree = vertex.outDegree
         if (outDegree > 0.0)
-          vertex.messageOutNeighbours(initHub)
+          vertex.messageOutNeighbours(HubMsg(initHub))
       }
       .step { (vertex, state) =>
         // Initialise the auth values based on recieved hub values
         val firstHub = vertex.getState[Double]("hitshub") // fix so not double, msg types
 
-        val queue     = vertex.messageQueue[Double]
-        val firstAuth = queue.sum / initHub // normalise
+        val queue     = vertex.messageQueue[HubMsg]
+        val firstAuth = queue.map(_.value).sum / initHub // normalise
         vertex.setState("hitsauth", firstAuth)
 
         state("hubAuthMax") += initHub
@@ -33,7 +33,7 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
         val inDegree  = vertex.inDegree
 
         if (outDegree > 0.0)
-          vertex.messageOutNeighbours(HubMsg(firstHub)) // seq?
+          vertex.messageOutNeighbours(HubMsg(firstHub))
         if (inDegree > 0.0)
           vertex.messageInNeighbours(AuthMsg(firstAuth))
       }
@@ -51,16 +51,15 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
                 var newHub: Double  = 0.0
 
                 queue.foreach {
-                  case HubMsg(value)  =>
+                  case AuthMsg(value) =>
                     newHub += (value / hubAuthMax) // normalise
 
-                  case AuthMsg(value) =>
+                  case HubMsg(value)  =>
                     newAuth += (value / hubAuthMax)
                 }
 
                 state("hubAuthMax") += newHub
                 state("hubAuthMax") += newAuth
-                println(newHub, newAuth)
 
                 vertex.setState("hitshub", newHub)
                 vertex.setState("hitsauth", newAuth)
