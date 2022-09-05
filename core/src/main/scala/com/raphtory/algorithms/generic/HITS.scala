@@ -2,7 +2,27 @@ package com.raphtory.algorithms.generic
 
 import com.raphtory.api.analysis.graphview.GraphPerspective
 
-class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth")) {
+/**
+  * {s}`HITS()`
+  * : Calculate the hub and authority scores of each vertex in the graph.
+  *
+  * The HITS algorithm is similar to pagerank but imagines 2 types of nodes: good hubs which have outgoing edges linking to lots of good authorities, and good authorities which have incoming edges from lots of good hubs.
+  * https://en.wikipedia.org/wiki/HITS_algorithm
+  *
+  * ## States
+  *
+  * {s}`hitshub: Long`
+  * : The current hub score of a vertex.
+  * {s}`hitsauth: Long`
+  * : The current authority score of a vertex
+  *
+  * ## Returns
+  *
+  * | vertex name       | hubs score          | authorities score |
+  * | ----------------- | ------------------ | ----------------- |
+  * | {s}`name: String` | {s}`husbauth: Long` | {s}`hitsauth: Long` |
+  */
+class HITS(iterateSteps: Int = 100, truncate: Boolean = false) extends NodeList(Seq("hitshub", "hitsauth")) {
 
   override def apply(graph: GraphPerspective): graph.Graph = {
     val initHub = 1.0
@@ -97,8 +117,15 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
         val currHub  = vertex.getState[Double]("hitshub")
         val currAuth = vertex.getState[Double]("hitsauth")
 
-        val newAuth = currAuth / authMax
-        val newHub  = currHub / hubMax
+        var newAuth = currAuth / authMax
+        var newHub  = currHub / hubMax
+
+        if (truncate == true) {
+          // round to 8 dp
+          val mult: Double = scala.math.pow(10, 8)
+          newAuth = (math floor newAuth * mult) / mult
+          newHub = (math floor newHub * mult) / mult
+        }
 
         vertex.setState("hitshub", newHub)
         vertex.setState("hitsauth", newAuth)
@@ -112,6 +139,6 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
 
 object HITS {
 
-  def apply(iterateSteps: Int = 100) =
-    new HITS(iterateSteps)
+  def apply(iterateSteps: Int = 100, truncate: Boolean = false) =
+    new HITS(iterateSteps, truncate)
 }
