@@ -21,6 +21,20 @@ import com.raphtory.api.analysis.graphview.GraphPerspective
   * | vertex name       | hubs score          | authorities score |
   * | ----------------- | ------------------ | ----------------- |
   * | {s}`name: String` | {s}`husbauth: Long` | {s}`hitsauth: Long` |
+  *
+  * ## Implementation
+  *
+  * The algorithm works by each vertex calculating its hub score by the sum of the authorities scores from its out neighbours, and its authorities score by the sum of the hubs score from its in neighbours, sending out its new scores, and iterating.
+  *
+  * 1. Initially we create accumulators, set the hub scores to an initial value (1.0), and message each vertex's hub score to its out neighbours.
+  *
+  * 2. Each vertex calculates it's initial authorities score from the sum of the hub scores it receives, and messages its hub score to its out neighbours, and its authorities score to its in neighbours.
+  *
+  * 3. On each iteration each vertex calculates its hub score from the sum of the authorities scores it receives, its authorities score from the sum of the hub values it receives, and normalises these values: dividing by the maximum of all the hubs and authorities scores from the last iteration.
+  *
+  * 4. It then messages its new hub score to its out neighbours, and its authorities score to its neighbours.
+  *
+  * 5. This repeats until the scores stay approximately constant, in which case the scores are normalised one more time.
   */
 class HITS(iterateSteps: Int = 100, truncate: Boolean = false) extends NodeList(Seq("hitshub", "hitsauth")) {
 
