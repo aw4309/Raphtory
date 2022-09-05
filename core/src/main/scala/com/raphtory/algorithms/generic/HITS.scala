@@ -9,6 +9,8 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
     graph
       .setGlobalState { state =>
         state.newMax[Double]("hubAuthMax", retainState = false)
+        state.newMax[Double]("hubMax", retainState = false)
+        state.newMax[Double]("authMax", retainState = false)
       }
       .step { vertex =>
         // Initialise the hub values and propagate
@@ -79,14 +81,24 @@ class HITS(iterateSteps: Int = 100) extends NodeList(Seq("hitshub", "hitsauth"))
               executeMessagedOnly = false
       )
       .step { (vertex, state) =>
+        // store the hubMax, authMax in an accumulator to normalise the values separately at the end (rather than normalising by the max of these 2 vals)
+        // we only need this value at the end so don't need these calculations earlier
+        val currHub  = vertex.getState[Double]("hitshub")
+        val currAuth = vertex.getState[Double]("hitsauth")
+
+        state("hubMax") += currHub
+        state("authMax") += currAuth
+      }
+      .step { (vertex, state) =>
         // normalise the final values
-        val hubAuthMax: Double = state("hubAuthMax").value
+        val hubMax: Double  = state("hubMax").value
+        val authMax: Double = state("authMax").value
 
         val currHub  = vertex.getState[Double]("hitshub")
         val currAuth = vertex.getState[Double]("hitsauth")
 
-        val newAuth = currAuth / hubAuthMax
-        val newHub  = currHub / hubAuthMax
+        val newAuth = currAuth / authMax
+        val newHub  = currHub / hubMax
 
         vertex.setState("hitshub", newHub)
         vertex.setState("hitsauth", newAuth)
