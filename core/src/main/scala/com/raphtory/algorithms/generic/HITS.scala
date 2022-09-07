@@ -9,6 +9,15 @@ import com.raphtory.api.analysis.graphview.GraphPerspective
   * The HITS algorithm is similar to pagerank but imagines 2 types of nodes: good hubs which have outgoing edges linking to lots of good authorities, and good authorities which have incoming edges from lots of good hubs.
   * https://en.wikipedia.org/wiki/HITS_algorithm
   *
+  * * ## Parameters
+  *
+  *  {s}`iterateSteps: Int = 100`
+  *    : Maximum number of iterations for the algorithm to run.
+  *  {s}`truncate: Boolean = false`
+  *    : If set to true, the scores at the end are truncated to 8 dp. s
+  *  {s}`tol: Double = 0.00001`
+  *    : Each vertex will vote to halt when it changes by less than tol in that iteration.
+  *
   * ## States
   *
   * {s}`hitshub: Long`
@@ -36,7 +45,8 @@ import com.raphtory.api.analysis.graphview.GraphPerspective
   *
   * 5. This repeats until the scores stay approximately constant, in which case the scores are normalised one more time.
   */
-class HITS(iterateSteps: Int = 100, truncate: Boolean = false) extends NodeList(Seq("hitshub", "hitsauth")) {
+class HITS(iterateSteps: Int = 100, truncate: Boolean = false, tol: Double = 0.00001)
+        extends NodeList(Seq("hitshub", "hitsauth")) {
 
   override def apply(graph: GraphPerspective): graph.Graph = {
     val initHub = 1.0
@@ -108,7 +118,7 @@ class HITS(iterateSteps: Int = 100, truncate: Boolean = false) extends NodeList(
                 if (inDegree > 0.0)
                   vertex.messageInNeighbours(AuthMsg(newAuth))
 
-                if (Math.abs(currHub - newHub) < 0.00001 & Math.abs(currAuth - newAuth) < 0.00001)
+                if (Math.abs(currHub - newHub) < tol & Math.abs(currAuth - newAuth) < tol)
                   vertex.voteToHalt()
               },
               iterations = iterateSteps,
@@ -153,6 +163,6 @@ class HITS(iterateSteps: Int = 100, truncate: Boolean = false) extends NodeList(
 
 object HITS {
 
-  def apply(iterateSteps: Int = 100, truncate: Boolean = false) =
-    new HITS(iterateSteps, truncate)
+  def apply(iterateSteps: Int = 100, truncate: Boolean = false, tol: Double = 0.00001) =
+    new HITS(iterateSteps, truncate, tol)
 }
