@@ -3,7 +3,7 @@ package com.raphtory.algorithms.generic
 import com.raphtory.api.analysis.graphview.GraphPerspective
 
 /**
-  * {s}`HITS()`
+  * {s}`HITS(iterateSteps: Int = 100, truncate: Boolean = false, tol: Double = 0.00001)`
   * : Calculate the hub and authority scores of each vertex in the graph.
   *
   * The HITS algorithm is similar to pagerank but imagines 2 types of nodes: good hubs which have outgoing edges linking to lots of good authorities, and good authorities which have incoming edges from lots of good hubs.
@@ -27,8 +27,8 @@ import com.raphtory.api.analysis.graphview.GraphPerspective
   *
   * ## Returns
   *
-  * | vertex name       | hubs score          | authorities score |
-  * | ----------------- | ------------------ | ----------------- |
+  * | vertex name       | hubs score          | authorities score   |
+  * | ----------------- | ------------------- | ------------------- |
   * | {s}`name: String` | {s}`husbauth: Long` | {s}`hitsauth: Long` |
   *
   * ## Implementation
