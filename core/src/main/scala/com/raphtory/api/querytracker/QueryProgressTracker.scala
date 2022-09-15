@@ -3,6 +3,9 @@ package com.raphtory.api.querytracker
 import com.raphtory.internals.communication.TopicRepository
 import com.raphtory.internals.components.Component
 import com.raphtory.internals.components.querymanager.JobDone
+import com.raphtory.internals.components.querymanager.PerspectiveCompleted
+import com.raphtory.internals.components.querymanager.PerspectiveFailed
+import com.raphtory.internals.components.querymanager.PerspectiveReport
 import com.raphtory.internals.components.querymanager.QueryManagement
 import com.raphtory.api.time.Perspective
 import com.typesafe.config.Config
@@ -97,18 +100,17 @@ class QueryProgressTracker private[raphtory] (
   // the query is in progress, or `JobDone` if the query is complete
   override def handleMessage(msg: QueryManagement): Unit =
     msg match {
-      case perspective: Perspective =>
-        val perspectiveDuration = System.currentTimeMillis() - perspectiveTime
-
-        if (perspective.window.nonEmpty)
-          logger.info(
-                  s"Job '$jobID': Perspective '${perspective.timestamp}' with window '${perspective.window.get}' " +
-                    s"finished in $perspectiveDuration ms."
-          )
-        else
-          logger.info(
-                  s"Job '$jobID': Perspective '${perspective.timestamp}' finished in $perspectiveDuration ms."
-          )
+      case perspectiveReport: PerspectiveReport =>
+        val perspective           = perspectiveReport.perspective
+        val perspectiveDuration   = System.currentTimeMillis() - perspectiveTime
+        val windowInfo            = if (perspective.window.nonEmpty) s" with window '${perspective.window.get}'" else ""
+        val (result, logFunction) = msg match {
+          case _: PerspectiveCompleted      => ("finished", logger.info(_: String))
+          case PerspectiveFailed(_, reason) => (s"failed (reason: '$reason')", logger.error(_: String))
+        }
+        val logMsg                =
+          s"Job '$jobID': Perspective '${perspective.timestamp}'$windowInfo $result after $perspectiveDuration ms."
+        logFunction(logMsg)
 
         perspectiveTime = System.currentTimeMillis
         perspectivesProcessed = perspectivesProcessed + 1
@@ -119,7 +121,7 @@ class QueryProgressTracker private[raphtory] (
 
         logger.info(s"Job $jobID: Running query, processed $perspectivesProcessed perspectives.")
 
-      case JobDone                  =>
+      case JobDone                              =>
         logger.info(
                 s"Job $jobID: Query completed with $perspectivesProcessed perspectives " +
                   s"and finished in ${System.currentTimeMillis() - startTime} ms."
