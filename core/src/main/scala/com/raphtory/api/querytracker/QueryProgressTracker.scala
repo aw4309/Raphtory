@@ -81,7 +81,7 @@ class QueryProgressTracker private[raphtory] (
   private val queryTrackListener                        =
     topics.registerListener(
             s"$graphID-$jobID-query-tracker",
-            handleMessage,
+            (message, bytes) => handleMessage(message),
             topics.queryTrack(jobID)
     )
   private var latestPerspective: Option[Perspective]    = None

@@ -4,7 +4,7 @@ private[raphtory] trait Connector {
 
   def register[T](
       id: String,
-      messageHandler: T => Unit,
+      messageHandler: (T, Array[Byte]) => Unit,
       topics: Seq[CanonicalTopic[T]]
   ): CancelableListener
 

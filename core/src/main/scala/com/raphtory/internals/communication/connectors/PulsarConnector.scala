@@ -63,7 +63,7 @@ private[raphtory] class PulsarConnector(
 
   override def register[T](
       id: String,
-      messageHandler: T => Unit,
+      messageHandler: (T, Array[Byte]) => Unit,
       topics: Seq[CanonicalTopic[T]]
   ): CancelableListener = {
     val consumerBuilders = topics
@@ -111,7 +111,7 @@ private[raphtory] class PulsarConnector(
 
   private def registerListener[T](
       listenerId: String,
-      messageHandler: T => Unit,
+      messageHandler: (T, Array[Byte]) => Unit,
       addresses: Seq[String],
       subscriptionType: SubscriptionType
   ): ConsumerBuilder[Array[Byte]] = {
@@ -129,7 +129,7 @@ private[raphtory] class PulsarConnector(
             )
           else {
             lastIds(msg.getTopicName) = id
-            messageHandler.apply(data)
+            messageHandler.apply(data, msg.getValue)
           }
           consumer.acknowledgeAsync(msg)
         }

@@ -16,7 +16,11 @@ import munit.FunSuite
 
 object NoConnector extends Connector {
 
-  override def register[T](id: String, messageHandler: T => Unit, topics: Seq[CanonicalTopic[T]]): CancelableListener =
+  override def register[T](
+      id: String,
+      messageHandler: (T, Array[Byte]) => Unit,
+      topics: Seq[CanonicalTopic[T]]
+  ): CancelableListener =
     ???
 
   override def endPoint[T](topic: CanonicalTopic[T]): EndPoint[T] = ???

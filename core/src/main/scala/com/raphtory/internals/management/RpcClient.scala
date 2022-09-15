@@ -34,7 +34,7 @@ class RpcClient[F[_]](dispatcher: Dispatcher[F], repo: TopicRepository, config: 
 
     val requestProcessing = clientResource
       .use { service =>
-        val encodedMessage = ByteString.copyFrom(kryo.serialise(msg))
+        val encodedMessage = ByteString.copyFrom(serialisedMsg)
         msg match {
           case query: Query =>
             val queryTrack = repo.queryTrack(query.name).endPoint

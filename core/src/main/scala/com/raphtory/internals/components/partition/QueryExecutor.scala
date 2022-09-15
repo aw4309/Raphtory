@@ -69,7 +69,7 @@ private[raphtory] class QueryExecutor(
 
   private val listener = topics.registerListener(
           s"$graphID-$jobID-query-executor-$partitionID",
-          handleMessage,
+          (message, bytes) => handleMessage(message),
           topics.jobOperations(jobID),
           partitionID
   )
@@ -80,7 +80,7 @@ private[raphtory] class QueryExecutor(
       Some(
               topics.registerListener(
                       s"$graphID-$jobID-query-executor-$partitionID",
-                      receiveVertexMessage,
+                      (message, bytes) => receiveVertexMessage(message),
                       topics.vertexMessages(jobID),
                       partitionID
               )
@@ -93,7 +93,7 @@ private[raphtory] class QueryExecutor(
       Some(
               topics.registerListener(
                       s"$graphID-$jobID-query-executor-$partitionID",
-                      receiveVertexControlMessage,
+                      (message, bytes) => receiveVertexControlMessage(message),
                       topics.vertexMessagesSync(jobID),
                       partitionID
               )

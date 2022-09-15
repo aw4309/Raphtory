@@ -33,7 +33,7 @@ case class TableOutputTracker(tracker: QueryProgressTracker, topics: TopicReposi
   private val outputListener =
     topics.registerListener(
             s"$graphID-$getJobId-output",
-            handleMessage,
+            (message, bytes) => handleMessage(message),
             topics.output(getJobId)
     )
 

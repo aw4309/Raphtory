@@ -127,19 +127,19 @@ private[raphtory] class TopicRepository(
 
   final def registerListener[T](
       id: String,
-      messageHandler: T => Unit,
+      messageHandler: (T, Array[Byte]) => Unit,
       topic: CanonicalTopic[T]
   ): CancelableListener = registerListener(id, messageHandler, Seq(topic))
 
   final def registerListener[T](
       id: String,
-      messageHandler: T => Unit,
+      messageHandler: (T, Array[Byte]) => Unit,
       topics: Seq[CanonicalTopic[T]]
   ): CancelableListener = registerListener(id, messageHandler, topics, 0)
 
   final def registerListener[T](
       id: String,
-      messageHandler: T => Unit,
+      messageHandler: (T, Array[Byte]) => Unit,
       topic: Topic[T],
       partition: Int
   ): CancelableListener = registerListener(id, messageHandler, Seq(topic), partition)
@@ -147,7 +147,7 @@ private[raphtory] class TopicRepository(
   /** The id provided here must be unique among different deployments */
   final def registerListener[T](
       id: String,
-      messageHandler: T => Unit,
+      messageHandler: (T, Array[Byte]) => Unit,
       topics: Seq[Topic[T]],
       partition: Int
   ): CancelableListener = {

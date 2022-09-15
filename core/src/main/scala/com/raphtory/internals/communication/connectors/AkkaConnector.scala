@@ -78,7 +78,7 @@ private[raphtory] class AkkaConnector(actorSystem: ActorSystem[SpawnProtocol.Com
 
   override def register[T](
       id: String,
-      messageHandler: T => Unit,
+      messageHandler: (T, Array[Byte]) => Unit,
       topics: Seq[CanonicalTopic[T]]
   ): CancelableListener = {
     val behavior = Behaviors.setup[Array[Byte]] { context =>
@@ -97,7 +97,7 @@ private[raphtory] class AkkaConnector(actorSystem: ActorSystem[SpawnProtocol.Com
               Behaviors.stopped[Array[Byte]]
             }
             else {
-              messageHandler.apply(value.asInstanceOf[T])
+              messageHandler.apply(value.asInstanceOf[T], message)
               Behaviors.same[Array[Byte]]
             }
           }

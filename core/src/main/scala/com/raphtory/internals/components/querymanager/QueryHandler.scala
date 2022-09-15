@@ -50,7 +50,7 @@ private[raphtory] class QueryHandler(
   private val listener =
     topics.registerListener(
             s"$graphID-$jobID-query-handler",
-            handleMessage,
+            (message, bytes) => handleMessage(message),
             Seq(topics.rechecks(jobID), topics.jobStatus(jobID))
     )
 
